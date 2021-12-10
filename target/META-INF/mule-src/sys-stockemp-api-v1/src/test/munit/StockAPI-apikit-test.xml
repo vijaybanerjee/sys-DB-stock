@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd http://www.mulesoft.org/schema/mule/munit-tools http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd ">
+    <munit:config name="StockAPI-apikit-test.xml" />
+    <http:request-config name="HTTP_Request_Configuration" basePath="/api">
+        <http:request-connection host="localhost" port="8081" />
+    </http:request-config>
+    <munit:test name="get:\getEmployee:StockAPI-config-200-application\json-FlowTest" description="Verifying functionality of [get:\getEmployee:StockAPI-config-200-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="StockAPI-main" />
+            <munit:enable-flow-source value="get:\getEmployee:StockAPI-config" />
+        </munit:enable-flow-sources>
+        <munit:execution>
+            <http:request config-ref="HTTP_Request_Configuration" method="GET" path="/getEmployee" responseTimeout="100000">
+                <http:headers><![CDATA[#[{"Accept":"application/json"}]]]></http:headers>
+            </http:request>
+        </munit:execution>
+        <munit:validation>
+            <munit-tools:assert-that expression="#[attributes.statusCode]" is="#[MunitTools::equalTo(200)]" message="The HTTP Status code is not correct!" doc:name="Assert That Status Code is 200" />
+            <munit-tools:assert-that expression="#[output application/java ---write(payload, 'application/json') as String]" is="#[MunitTools::startsWith('[')]" message="The response payload is not correct!" doc:name="Assert That - Payload is Expected" />
+        </munit:validation>
+    </munit:test>
+    <munit:test name="get:\getEmployee:StockAPI-config-500-application\json-FlowTest" description="Verifying functionality of [get:\getEmployee:StockAPI-config-500-application\json]">
+        <munit:enable-flow-sources>
+            <munit:enable-flow-source value="StockAPI-main" />
+            <munit:enable-flow-source value="get:\getEmployee:StockAPI-config" />
+        </munit:enable-flow-sources>
+        <munit:execution>
+            <http:request config-ref="HTTP_Request_Configuration" method="GET" path="/getEmploye" responseTimeout="100000">
+                <http:headers><![CDATA[#[{"Accept":"application/json"}]]]></http:headers>
+            </http:request>
+        </munit:execution>
+        <munit:validation>
+            <logger level="INFO" doc:name="Logger" doc:id="06fd62e3-d6ae-4033-8b07-04f589f87f7f" message="#[attributes.statusCode]"/>
+			<munit-tools:assert-that expression="#[attributes.statusCode]" is="#[MunitTools::equalTo(500)]" message="The HTTP Status code is not correct!" doc:name="Assert That Status Code is 500" />
+			<logger level="INFO" doc:name="Logger" doc:id="5c940cc5-c3e2-4fe6-96e0-2b54cf71fbe9" message="#[attributes.statusCode]"/>
+        </munit:validation>
+    </munit:test>
+</mule>
